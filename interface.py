@@ -36,11 +36,8 @@ class Window:
         #! ADD
         #self._oper_field = plt.axes([0.1, 0.78, 0.1, 0.05])       # *needs to be a scroolbar 
         # field with available operators
-        #self._func_text =  plt.axes([0.1, 0.73, 0.1, 0.05])         # left, second field
         self._func_field =  plt.axes([0.07, 0.66, 0.09, 0.04])         # *simple TextBox with eval function
         # # field with available functions
-        # self._ab_text = plt.axes([0.1, 0.59, 0.1, 0.05])            # left, third field
-        # self._T_text = plt.axes([0.1, 0.52, 0.1, 0.05])             # *textbox with eval
         self._T_field = plt.axes([0.1, 0.49, 0.05, 0.035])              # *textbox with eval
         self._a_field = plt.axes([0.1, 0.39, 0.05, 0.035])            # left, third field
         self._b_field = plt.axes([0.1, 0.32, 0.05, 0.035])            # left, third field
@@ -56,13 +53,13 @@ class Window:
     def _init_fields_(self):
         #TODO: placements of the boxes 
         # TODO: 1st field
+        # TODO: 4th field - should be a new window with scrolling bar
         plt.text(-8.2, 15.5, r'Choose operator L:', fontsize=12)           # first field --- listbox
         #ax.text(2, 6, r'Write down the function, you want to evaluate', fontsize=15)    # second field
         # * 2nd field
         plt.text(-8.2, 13.4, "Write down the function", fontsize=12)
         self._oper_txtbox = widg.TextBox(self._func_field, "y(x, t) = ", initial="0")
         self._oper_txtbox.on_submit(self.callback.submit_y)
-        
         # * 3rd field
         plt.text(-8.2, 9.8, "Input T value for [0, T] interval", fontsize=12)
         self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
