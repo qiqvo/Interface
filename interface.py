@@ -1,32 +1,87 @@
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widg
+import matplotlib.patches as pat
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
+
+
 class Index_Funcs(object):
     def __init__(self):
-        self._values = {}
-
-    def submit_y(self):
-        pass
-
-    def submit_T(self):
+        self.T = self.a = self.b = 0
+        self.markedDots_T = []
+        self.markedDots_ab = []
+        self.function = None
+        self.operator = None
+    
+    # !DO AS A SCROOLBOX
+    def submit_operator(self):
         pass
     
-    def submit_a(self):
-        pass
-    
-    def submit_b(self):
+    # !DO AS A SCROOLBOX
+    def submit_function(self):
         pass
 
-    def evaluateB(self):
+    def submit_T(self, text_T):
+        _t = 0
+        try:
+            _t = float(text_T)
+        except:
+            return "T should be a number"
+        if _t >= 0:
+            self.T = _t
+        else:
+            self.T = 0
+    
+    def submit_a(self, text_a):
+        _a = 0
+        try:
+            _a = float(text_a)
+        except:
+            return "a should be a number"
+        self.a = _a
+    
+    def submit_b(self, text_b):
+        _b = 0
+        try:
+            _b = float(text_b)
+        except:
+            return "b should be a number"
+        if _b >= self.a:
+            self.b = _b
+        else:
+            self.b = self.a
+
+    # ! this one will be last - after averytjing is set up
+    def evaluateB(self, event):
         pass
 
-    def update_ab(self):
-        pass
-    
-    def update_T(self):
-        pass
+    def __mouse_click_on(self, event):
+        ix, iy = event.xdata, event.ydata
+        print("x = ", ix, " y = ", iy)
+        if((ix < self.a or ix > self.b) and (iy <= self.T and iy >=0)):
+            self.markedDots_T.append((ix, iy))
+        elif((ix >= self.a and ix <= self.b) and iy <= 0):
+            self.markedDots_ab.append((ix, iy))
+
+
+    def __mouse_click_off(self, event):
+        self.fig.canvas.mpl_disconnect(self.cid)
+
+    def dot_marker(self, event):
+        self.fig = plt.figure()
+        self.cid = fig.canvas.mpl_connect("mouse click event", self.__mouse_click_on)
+        rect = plt.Rectangle((self.a, 0), self.b, self.T, fc = 'b')
+        plt.gca().add_patch(rect)
+        plt.axis('scaled')
+        plt.show()
+        ax = [0.01, 0.01, 0.05, 0.02]
+        stop_marking = widg.Button(ax, "Stop marking dots")
+        stop_marking.on_clicked(self.__mouse_click_off)
+        plt.close(fig = self.fig)
+
+
+
 
 class Window:
     def __init__(self, fig, figsize = (1, 1)):
@@ -34,17 +89,16 @@ class Window:
         self._figure = fig      # matplotlib figure
         #self._oper_text = plt.axes([0.1, 0.85, 0.1, 0.05])       # left, 1st field
         #! ADD
-        #self._oper_field = plt.axes([0.1, 0.78, 0.1, 0.05])       # *needs to be a scroolbar 
+        #self._oper_field = plt.axes([0.1, 0.78, 0.1, 0.05])       # *needs to be a scroolbox 
         # field with available operators
         self._func_field =  plt.axes([0.07, 0.66, 0.09, 0.04])         # *simple TextBox with eval function
         # # field with available functions
         self._T_field = plt.axes([0.1, 0.49, 0.05, 0.035])              # *textbox with eval
         self._a_field = plt.axes([0.1, 0.39, 0.05, 0.035])            # left, third field
         self._b_field = plt.axes([0.1, 0.32, 0.05, 0.035])            # left, third field
+        # 4th field button
+        self._mark_dots = plt.axes([0.1, 0.23, 0.05, 0.035])
         # 2 fieds for writing
-        #self._choose_dots_text = plt.axes([0.1, 0.24, 0.1, 0.05])    # left, forth field - #! probably should be a button
-        #self._chose_ab_field = plt.axes([0.1, 0.17, 0.1, 0.05])       #! needs to be in a separate window
-        #self._chose_T_field = plt.axes([0.1, 0.1, 0.1, 0.05])        #! needs to be in a separate window
         # 2 fields for segments
         self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      # for evaluate #!button
         self.callback = Index_Funcs()
@@ -52,11 +106,12 @@ class Window:
 
     def _init_fields_(self):
         #TODO: placements of the boxes 
-        # TODO: 1st field
-        # TODO: 4th field - should be a new window with scrolling bar
+        # TODO: 1st field, 2nd field ---- as scroolboxes
+        # * 1st field
         plt.text(-8.2, 15.5, r'Choose operator L:', fontsize=12)           # first field --- listbox
         #ax.text(2, 6, r'Write down the function, you want to evaluate', fontsize=15)    # second field
         # * 2nd field
+        # TODO: 
         plt.text(-8.2, 13.4, "Write down the function", fontsize=12)
         self._oper_txtbox = widg.TextBox(self._func_field, "y(x, t) = ", initial="0")
         self._oper_txtbox.on_submit(self.callback.submit_y)
@@ -70,10 +125,8 @@ class Window:
         self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
         self._valueb_txtbox.on_submit(self.callback.submit_b)
         # * 4th field
-        #self._ab_text.text(0.1, 4, "Chose the values outside the field [0, T], \n where we will have our observations", fontsize=8)
-        # TODO: scroolig field for T
-        #self._T_text.text(0.1, 6, "Chose the values outside the field [a, b], \n where we will have our observations", fontsize=8)
-        # TODO: scrooling field for [a, b]
+        self._chose_ab_T_dots = widg.Button(self._mark_dots, "Mark dots", color = '0.7')
+        self._chose_ab_T_dots.on_clicked(self.callback.dot_marker)
         # * EVALUATE button
         self._eval_button = widg.Button(self._eval_field, "Evaluate", color='0.9')
         self._eval_button.on_clicked(self.callback.evaluateB)
