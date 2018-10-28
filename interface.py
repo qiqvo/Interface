@@ -13,12 +13,13 @@ class Index_Funcs(object):
         self.markedDots_ab = []
         self.function = None
         self.operator = None
-    
-    # !DO AS A SCROOLBOX
+        
+    # https://stackoverflow.com/questions/40467672/add-dropdown-list-and-text-box-in-matplotlib-and-show-plot-according-to-the-inpu
+    # !DO AS A LISTBOX
     def submit_operator(self):
         pass
     
-    # !DO AS A SCROOLBOX
+    # !DO AS A LISTBOX
     def submit_function(self):
         pass
 
@@ -98,23 +99,21 @@ class Window:
         self._b_field = plt.axes([0.1, 0.32, 0.05, 0.035])            # left, third field
         # 4th field button
         self._mark_dots = plt.axes([0.1, 0.23, 0.05, 0.035])
-        # 2 fieds for writing
-        # 2 fields for segments
+        # evaluate
         self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      # for evaluate #!button
         self.callback = Index_Funcs()
         self._init_fields_()
 
     def _init_fields_(self):
-        #TODO: placements of the boxes 
-        # TODO: 1st field, 2nd field ---- as scroolboxes
+        # TODO: 1st field, 2nd field ---- as listboxes
         # * 1st field
+        # TODO:
         plt.text(-8.2, 15.5, r'Choose operator L:', fontsize=12)           # first field --- listbox
-        #ax.text(2, 6, r'Write down the function, you want to evaluate', fontsize=15)    # second field
-        # * 2nd field
+        # * 2nd field 
         # TODO: 
-        plt.text(-8.2, 13.4, "Write down the function", fontsize=12)
-        self._oper_txtbox = widg.TextBox(self._func_field, "y(x, t) = ", initial="0")
-        self._oper_txtbox.on_submit(self.callback.submit_y)
+        plt.text(-8.2, 13.4, "Choose the function", fontsize=12)
+        #self._oper_txtbox = widg.TextBox(self._func_field, "y(x, t) = ", initial="0")
+        #self._oper_txtbox.on_submit(self.callback.submit_y)
         # * 3rd field
         plt.text(-8.2, 9.8, "Input T value for [0, T] interval", fontsize=12)
         self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
