@@ -34,7 +34,6 @@ class Index_Funcs(object):
         B.pack()
         top.mainloop()
 
-
     def function_listbox(self, event):
         top = Tk()
         Lb_func = Listbox(top, width = 40)
@@ -52,6 +51,11 @@ class Index_Funcs(object):
         B.pack()
         top.mainloop()
 
+    def get_function(self):
+        return self.functionList[self.function]
+
+    def get_operator(self):
+        return self.operatorList[self.operator]
 
     def submit_T(self, text_T):
         _t = 0
@@ -83,31 +87,30 @@ class Index_Funcs(object):
         else:
             self.b = self.a
 
-    # TODO: make it work
-    # TOFIX: bounds of blue box or axis
+    # TODO: take the mouse clicks and add confirm button
     def dot_marker(self, event):
-
+        __far_left = self.a - 100
+        __far_right = self.b + 100
+        __far_down = - 100
         def __mouse_click_on(event):
-            # doesn't go here for some reason
             ix, iy = event.xdata, event.ydata
             print("x = ", ix, " y = ", iy)
             if((ix < self.a or ix > self.b) and (iy <= self.T and iy >=0)):
                 self.markedDots_T.append((ix, iy))
             elif((ix >= self.a and ix <= self.b) and iy <= 0):
                 self.markedDots_ab.append((ix, iy))
-
+        
         fig = plt.figure()
         cid = fig.canvas.mpl_connect("mouse click event", __mouse_click_on)
         rect = plt.Rectangle((self.a, 0), self.b, self.T, fc = 'b')
+        plt.scatter([__far_left, 0, __far_right], [0, __far_down, 0], s=[0.1, 0.1, 0.1], color = "#111111")
         plt.gca().add_patch(rect)
         plt.axis('scaled')
         plt.show()
 
-
         def __mouse_click_off(event):
             fig.canvas.mpl_disconnect(cid)
             plt.close(fig = fig)
-
 
         ax = [0.1, 0.1, 0.05, 0.02]
         stop_marking = widg.Button(ax, "Stop marking dots")
@@ -127,7 +130,7 @@ class Index_Funcs(object):
         top.mainloop()
 
 
-    # TODO: this one will be last - after averytjing is set up
+    # ! this one will be last - after averytjing is set up
     def evaluateB(self, event):
         pass
 
@@ -159,6 +162,7 @@ class Window:
         # * 2nd field
         self._function_b = widg.Button(self._choose_function, "Choose the function", color = '0.7')
         self._function_b.on_clicked(self.callback.function_listbox)
+
         # * 3rd field
         plt.text(-8.2, 9.8, "Input T value for [0, T] interval", fontsize=12)
         self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
