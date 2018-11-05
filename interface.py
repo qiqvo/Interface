@@ -15,8 +15,8 @@ class Index_Funcs(object):
         def __init__(self, figure):
             self._main_figure = figure
             self.T = self.a = self.b = 0
-            self.markedDots_T = []
-            self.markedDots_ab = []
+            self.marked_dots_T = []
+            self.marked_dots_ab = []
             self.function = None
             self.operator = None
             # TODO: think of en effecient way to do this
@@ -35,9 +35,9 @@ class Index_Funcs(object):
                     self._dots_T = []
                     self._markedx = []
                     self._markedy = []
-                    __far_left = a - a*0.5 - b*0.5
-                    __far_right = b + b*0.5 + a*0.5
-                    __far_down = - T
+                    __far_left = a - a*0.2 - b*0.2 - T*0.2
+                    __far_right = b + b*0.2 + a*0.2 + T*0.2
+                    __far_down = - T*0.2 - a*0.2 - b*0.2
                     self.cid = dots.figure.canvas.mpl_connect('button_press_event', self)
                     plt.scatter([__far_left, 0, __far_right], [0, __far_down, 0], s=0.1, color = "#111111")
 
@@ -199,7 +199,7 @@ class Index_Funcs(object):
 
             w = Worker(y, u, G)         # ! wait for appropriate functions
             w.set_region_rectangle(self.a, self.b, self.T)
-            w.set_modeling_function_points(self.markedDots_T, self.markedDots_ab)
+            w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
 
             w.action()
 
