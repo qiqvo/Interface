@@ -25,8 +25,63 @@ class Index_Funcs(object):
             self.operatorList = ["Lu = 21u + 3", "Lu = 3u^2 + u", "Lu = 12"]
             self.functions = (lambda x: 23*x + 4, lambda x: x*x + 5, lambda x: 21*x, lambda x: 49*x**4 + 45*x)
             self.functionList = ["f(x) = 23x + 4 * x^2 + 5", "f(x) = 12x", "f(x) = 49 * x^4 + 45x"]
+           
+	class DotBuilder:
+		"""Helper class for marking dots on the separate UI window"""
+                def __init__(self, dots, a, b, T):
+                    self.dots = dots
+                    self.left, self.right, self.time = a, b, T
+                    self._dots_ab = []
+                    self._dots_T = []
+                    self._markedx = []
+                    self._markedy = []
+                    __far_left = a - a*0.5 - b*0.5
+                    __far_right = b + b*0.5 + a*0.5
+                    __far_down = - T
+                    self.cid = dots.figure.canvas.mpl_connect('button_press_event', self)
+                    plt.scatter([__far_left, 0, __far_right], [0, __far_down, 0], s=0.1, color = "#111111")
 
-        def operator_listbox(self, event):
+                def __call__(self, event):
+			"""When class object is called, if mouse click is in the scope, the dot is remembered"""
+                    if event.inaxes!=self.dots.axes: 
+                        return
+                    if (event.xdata <= self.left and event.ydata <= self.time and event.ydata >= 0):
+                        self._dots_ab.append((event.xdata, event.ydata))
+                        self._markedx.append(event.xdata)
+                        self._markedy.append(event.ydata)
+                    if (event.xdata >= self.right and event.ydata <= self.time and event.ydata >= 0):
+                        self._dots_ab.append((event.xdata, event.ydata))
+                        self._markedx.append(event.xdata)
+                        self._markedy.append(event.ydata)
+                    if (event.ydata < 0 and event.xdata >= self.left and event.xdata <= self.right):
+                        self._dots_T.append((event.xdata, event.ydata))
+                        self._markedx.append(event.xdata)
+                        self._markedy.append(event.ydata)
+                    self.dots.set_color('r')
+                    self.dots.set_data(self._markedx, self._markedy)
+                    self.dots.figure.canvas.draw()
+        
+        def dot_marker(self, event):
+		"""Creates a window to mark the dots s_0, s_g
+		After pressing confirm button dots are written in the class variable"""
+            fig = plt.figure()
+            ax = fig.add_subplot(111, aspect="equal")
+            ax.set_title('click to mark dots')
+            ax.add_patch(patches.Rectangle((self.a, 0), self.b, self.T, fc = 'b'))
+            dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
+            dotbuilder = DotBuilder(dot, self.a, self.b, self.T)
+		
+            def confirm(event):
+                self.marked_dots_ab = dotbuilder._dots_ab.copy()
+                self.marked_dots_T = dotbuilder._dots_T.copy()
+                plt.close(fig)
+
+            conf_buuton = widg.Button(plt.axes([0.8, 0.05, 0.1, 0.05]), "Confirm")
+            conf_buuton.on_clicked(confirm)
+            plt.show()
+	
+	def operator_listbox(self, event):
+		"""Opens a window, that lists avaliable operators, and gives opartunity to choose one"""
             top = Tk()
             Lb_oper = Listbox(top, width = 40)
             i = 1
@@ -45,6 +100,7 @@ class Index_Funcs(object):
             top.mainloop()
 
         def function_listbox(self, event):
+		"""Opens a window, that lists avaliable functions, and gives opartunity to choose one"""
             top = Tk()
             Lb_func = Listbox(top, width = 40)
             i = 1
@@ -104,54 +160,6 @@ class Index_Funcs(object):
             else:
                 self.b = self.a
 
-        def dot_marker(self, event):
-            class DotBuilder:
-                def __init__(self, dots, a, b, T):
-                    self.dots = dots
-                    self.left, self.right, self.time = a, b, T
-                    self._dots_ab = []
-                    self._dots_T = []
-                    self._markedx = []
-                    self._markedy = []
-                    __far_left = a - a*0.5 - b*0.5
-                    __far_right = b + b*0.5 + a*0.5
-                    __far_down = - T
-                    self.cid = dots.figure.canvas.mpl_connect('button_press_event', self)
-                    plt.scatter([__far_left, 0, __far_right], [0, __far_down, 0], s=0.1, color = "#111111")
-
-                def __call__(self, event):
-                    if event.inaxes!=self.dots.axes: 
-                        return
-                    if (event.xdata <= self.left and event.ydata <= self.time and event.ydata >= 0):
-                        self._dots_ab.append((event.xdata, event.ydata))
-                        self._markedx.append(event.xdata)
-                        self._markedy.append(event.ydata)
-                    if (event.xdata >= self.right and event.ydata <= self.time and event.ydata >= 0):
-                        self._dots_ab.append((event.xdata, event.ydata))
-                        self._markedx.append(event.xdata)
-                        self._markedy.append(event.ydata)
-                    if (event.ydata < 0 and event.xdata >= self.left and event.xdata <= self.right):
-                        self._dots_T.append((event.xdata, event.ydata))
-                        self._markedx.append(event.xdata)
-                        self._markedy.append(event.ydata)
-                    self.dots.set_color('r')
-                    self.dots.set_data(self._markedx, self._markedy)
-                    self.dots.figure.canvas.draw()
-
-            fig = plt.figure()
-            ax = fig.add_subplot(111, aspect="equal")
-            ax.set_title('click to mark dots')
-            ax.add_patch(patches.Rectangle((self.a, 0), self.b, self.T, fc = 'b'))
-            dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
-            dotbuilder = DotBuilder(dot, self.a, self.b, self.T)
-            def confirm(event):
-                self.marked_dots_ab = dotbuilder._dots_ab.copy()
-                self.marked_dots_T = dotbuilder._dots_T.copy()
-                plt.close(fig)
-
-            conf_buuton = widg.Button(plt.axes([0.8, 0.05, 0.1, 0.05]), "Confirm")
-            conf_buuton.on_clicked(confirm)
-            plt.show()
 
         def show(self, event):
             top = Tk()
@@ -170,12 +178,14 @@ class Index_Funcs(object):
             self.__text_func = text_func
 
         def update_text(self):
+		"""Changes text of operator and function in UI"""
             self.__text_oper.set_text(self.get_operator())
             self.__text_func.set_text(self.get_function())
 
         # ! this one will be last - after averytjing is set up
         # TODO: finish this
         def evaluateB(self, event):
+		"""This function will collect the inputed data, solve the task and redraw solution"""
             k1, k2 = 2, 3
             k = 1
             def y(x, t):
@@ -211,6 +221,7 @@ class Index_Funcs(object):
 
 class Window:
     def __init__(self, fig, figsize = (1, 1)):
+	"""Setting up axes for fields and buttons"""
         # * Placement
         self._figure = fig      # matplotlib figure
         # 1st and 2nd fields
