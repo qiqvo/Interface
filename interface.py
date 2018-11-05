@@ -67,7 +67,7 @@ class Index_Funcs(object):
             fig = plt.figure()
             ax = fig.add_subplot(111, aspect="equal")
             ax.set_title('click to mark dots')
-            ax.add_patch(patches.Rectangle((self.a, 0), self.b, self.T, fc = 'b'))
+            ax.add_patch(patches.Rectangle((self.a, 0), self.b - self.a, self.T, fc = 'b'))
             dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
             dotbuilder = DotBuilder(dot, self.a, self.b, self.T)
 		
