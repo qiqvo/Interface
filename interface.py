@@ -10,12 +10,11 @@ import numpy as np
 from tkinter import *
 Pi = 3.14159265359
 
-# TODO: plot to main window
-# TODO: change all the names to ukrainian 
 
 class Index_Funcs(object):
-	def __init__(self, figure):
+	def __init__(self, figure, ax):
 		self._main_figure = figure
+		self._main_plot_ax=ax
 		self.T = self.a = self.b = 0
 		# due to make checking easier
 		self.T = 3
@@ -26,12 +25,10 @@ class Index_Funcs(object):
 		self.marked_dots_ab = []
 		self.function = None
 		self.operator = None
-		# TODO: think of en effecient way to do this
-		# TODO: also need a function that returns Green function
 		self.operators = (lambda x: 21*x + 3, lambda x: 3*x*x + 3, lambda x: 21)
 		self.operatorList = ["Lu = 21u + 3", "Lu = 3u^2 + u", "Lu = 12"]
 		self.functions = (lambda x: 23*x + 4, lambda x: x*x + 5, lambda x: 21*x, lambda x: 49*x**4 + 45*x)
-		self.functionList = ["f(x) = 23x + 4 * x^2 + 5", "f(x) = 12x", "f(x) = 49 * x^4 + 45x"]
+		self.functionList = ["y(x, t) = 23x + 4 * x^2 + 5", "y(x, t) = 12x", "y(x, t) = 49 * x^4 + 45x"]
 		   
 	"""Helper class for marking dots on the separate UI window"""
 	class DotBuilder:
@@ -73,7 +70,7 @@ class Index_Funcs(object):
 	def dot_marker(self, event):
 		fig = plt.figure()
 		ax = fig.add_subplot(111, aspect="equal")
-		ax.set_title('click to mark dots')
+		ax.set_title('Позначте точки ')
 		ax.add_patch(patches.Rectangle((self.a, 0), self.b - self.a, self.T, fc = 'b'))
 		dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
 		dotbuilder = self.DotBuilder(dot, self.a, self.b, self.T)
@@ -83,7 +80,7 @@ class Index_Funcs(object):
 			self.marked_dots_T = dotbuilder._dots_T.copy()
 			plt.close(fig)
 
-		conf_buuton = widg.Button(plt.axes([0.8, 0.05, 0.1, 0.05]), "Confirm")
+		conf_buuton = widg.Button(plt.axes([0.8, 0.05, 0.1, 0.05]), "ОК")
 		conf_buuton.on_clicked(confirm)
 		plt.show()
 
@@ -102,7 +99,7 @@ class Index_Funcs(object):
 			self.update_text()
 			top.destroy()
       
-		B = Button(top, text = "Confirm operator", command = confirm)
+		B = Button(top, text = "Підтвердити оператор", command = confirm)
 		B.pack()
 		top.mainloop()
 
@@ -121,7 +118,7 @@ class Index_Funcs(object):
 			self.update_text()
 			top.destroy()
       
-		B = Button(top, text = "Confirm function", command = confirm)
+		B = Button(top, text = "Підтвердити функцію", command = confirm)
 		B.pack()
 		top.mainloop()
 
@@ -175,7 +172,7 @@ class Index_Funcs(object):
 				self.functionList[self.function] 
 		text.insert(INSERT, mass)
 		text.pack()
-		B = Button(top, text = "Ok", command = top.destroy)
+		B = Button(top, text = "ОК", command = top.destroy)
 		B.pack()
 		top.mainloop()
 	
@@ -190,7 +187,6 @@ class Index_Funcs(object):
 	
 	# ! this one will be last - after averytjing is set up
 	# TODO: finish this
-	
 	"""This function will collect the inputed data, solve the task and redraw solution"""
 	def evaluateB(self, event):
 		k1, k2 = 2, 3
@@ -231,30 +227,29 @@ class Index_Funcs(object):
 		# Z3 = [[w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j] for j in range(len(Y))] for i in range(len(X))]
 		print("Operations finished")
 		
-		### TODO: plot to the main window
 
-		plt.plot(Xs, Ys, Z1, "yo", label='y')
-		plt.plot(Xs, Ys, Z2, "ro", label="y_inf")
-		plt.plot(Xs, Ys, Z3, "bo", label='solution')
+		self._main_plot_ax.plot_surface(Xs, Ys, Z1, "yo", label='y')
+		self._main_plot_ax.plot_surface(Xs, Ys, Z2, "ro", label="y_inf")
+		self._main_plot_ax.plot_surface(Xs, Ys, Z3, "bo", label='solution')
 		plt.legend()
-		# plt.show()
-		#ax.set_zlim(-5, 12)
+		self._main_plot_ax.figure.canvas.draw()
 
 
 class Window:
 	"""Setting up axes for fields and buttons"""
-	def __init__(self, fig, figsize = (1, 1)):
+	def __init__(self, fig, ax, figsize = (1, 1)):
 		# * Placement
 		self._figure = fig      # matplotlib figure
+		self.plt_ax = ax
 		# 1st and 2nd fields
 		self._choose_operator = plt.axes([0.03, 0.82, 0.125, 0.05])   
 		self._choose_function = plt.axes([0.03, 0.67, 0.125, 0.05])   
 		# 3d field
-		self._T_field = plt.axes([0.052, 0.49, 0.05, 0.035])              # *textbox with eval
-		self._a_field = plt.axes([0.052, 0.38, 0.05, 0.035])            # left, third field
-		self._b_field = plt.axes([0.052, 0.31, 0.05, 0.035])            # left, third field
+		self._T_field = plt.axes([0.052, 0.48, 0.05, 0.035])            # *textbox with eval
+		self._a_field = plt.axes([0.052, 0.36, 0.05, 0.035])            # left, third field
+		self._b_field = plt.axes([0.052, 0.29, 0.05, 0.035])            # left, third field
 		# 4th field button
-		self._mark_dots = plt.axes([0.03, 0.23, 0.125, 0.05])
+		self._mark_dots = plt.axes([0.03, 0.20, 0.125, 0.05])
 		# evaluate
 		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      # for evaluate #!button
 		# operator and function textboxes
@@ -262,33 +257,37 @@ class Window:
 				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
 		self.__func_text = plt.text(-8.1, 11.5, "y(x, t) = 0", fontsize=15, style='italic')
 				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
-		self.callback = Index_Funcs(fig)
+		self.callback = Index_Funcs(fig, ax)
 		self.callback.set_text(self.__oper_text, self.__func_text)
 		self._init_fields_()
 
 	def _init_fields_(self):
 		# * 1st field
-		self._operator_b = widg.Button(self._choose_operator, r'Choose operator L', color = '#ffcc66')
+		self._operator_b = widg.Button(self._choose_operator, r'Оберати оператор L', color = '#ffcc66')
 		self._operator_b.on_clicked(self.callback.operator_listbox)
 		# * 2nd field
-		self._function_b = widg.Button(self._choose_function, "Choose the function", color = '#ffcc66')
+		self._function_b = widg.Button(self._choose_function, "Оберати функцію y(x, t)", color = '#ffcc66')
 		self._function_b.on_clicked(self.callback.function_listbox)
 		# * 3rd field
-		plt.text(-8.2, 10.2, "Input T value for [0, T] interval:", fontsize=15, style='italic')
+		plt.text(-8.2, 10.2, "Введіть значення часу T для", fontsize=15, style='italic')
+				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
+		plt.text(-8.2, 9.7, "  інтервалу [0, T]:", fontsize=15, style='italic')
 				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
 		self._valueT_txtbox.on_submit(self.callback.submit_T)
-		plt.text(-8.2, 7.9, "Input a and b values for [a, b] interval:", fontsize=15, style='italic')
+		plt.text(-8.2, 7.9, "Введіть значення границі спостереження", fontsize=15, style='italic')
+				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
+		plt.text(-8.2, 7.4, "  a та b інтервалу [a, b]:", fontsize=15, style='italic')
 				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valuea_txtbox = widg.TextBox(self._a_field, "a = ", initial="0")
 		self._valuea_txtbox.on_submit(self.callback.submit_a)
 		self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
 		self._valueb_txtbox.on_submit(self.callback.submit_b)
 		# * 4th field
-		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Mark dots", color = '#ffcc66')
+		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Позначити точки", color = '#ffcc66')
 		self._chose_ab_T_dots.on_clicked(self.callback.dot_marker)
 		# * EVALUATE button
-		self._eval_button = widg.Button(self._eval_field, "Evaluate", color='#ffcc00')
+		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#ffcc00')
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
 

@@ -10,7 +10,7 @@ def IntSimpson(func, arr):
 
 def integral(f, a, b):
 	# return quad(f, a, b)[0]
-	return IntSimpson(f, gen_x(a, b, 5*(b-a)))
+	return IntSimpson(f, gen_x(a, b, int(5*(b-a))))
 
 def deriv(f, x):
 	dx = 0.0001
