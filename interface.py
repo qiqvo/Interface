@@ -69,7 +69,7 @@ class Index_Funcs(object):
             ax.set_title('click to mark dots')
             ax.add_patch(patches.Rectangle((self.a, 0), self.b - self.a, self.T, fc = 'b'))
             dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
-            dotbuilder = DotBuilder(dot, self.a, self.b, self.T)
+            dotbuilder = self.DotBuilder(dot, self.a, self.b, self.T)
 		
             def confirm(event):
                 self.marked_dots_ab = dotbuilder._dots_ab.copy()
