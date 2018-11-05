@@ -96,17 +96,17 @@ class Index_Funcs(object):
 			Lb_oper.insert(i, op)
 			i += 1
 		Lb_oper.pack()
-		
+    
 		def confirm():
 			self.operator = Lb_oper.curselection()[-1]
 			self.update_text()
 			top.destroy()
-		
+      
 		B = Button(top, text = "Confirm operator", command = confirm)
 		B.pack()
 		top.mainloop()
 
-	"""Opens a window, that lists avaliable functions, and gives opartunity to choose one"""
+	"""Opens a window, that lists avaliable functions, and gives oportunity to choose one"""
 	def function_listbox(self, event):
 		top = Tk()
 		Lb_func = Listbox(top, width = 40)
@@ -115,11 +115,12 @@ class Index_Funcs(object):
 			Lb_func.insert(i, op)
 			i += 1
 		Lb_func.pack()
+    
 		def confirm():
 			self.function = Lb_func.curselection()[-1]
 			self.update_text()
 			top.destroy()
-		"""Opens a window, that lists avaliable functions, and gives opartunity to choose one"""
+      
 		B = Button(top, text = "Confirm function", command = confirm)
 		B.pack()
 		top.mainloop()
@@ -290,19 +291,21 @@ class Window:
 		self._eval_button = widg.Button(self._eval_field, "Evaluate", color='#ffcc00')
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
+
+
 def main():
-	fig = plt.figure(figsize=(22, 12), dpi = 80)
-	ax = fig.gca(projection='3d')
-	wind = Window(fig)
+    fig = plt.figure(figsize=(22, 12), dpi = 80)
+    ax = fig.gca(projection='3d')
+    wind = Window(fig, ax)
 
-	X = np.arange(-5, 5, 0.25)
-	Y = np.arange(-5, 5, 0.25)
-	X, Y = np.meshgrid(X, Y)
-	R = np.sqrt(X**2 + Y**2)
-	Z = np.sin(R)
+    #X = np.arange(-5, 5, 0.25)
+    #Y = np.arange(-5, 5, 0.25)
+    #X, Y = np.meshgrid(X, Y)
+    #R = np.sqrt(X**2 + Y**2)
+    #Z = np.sin(R)
 
-	ax.plot_surface(X, Y, Z)
-	plt.show()
+    #ax.plot_surface(X, Y, Z)
+    plt.show()
 
 
 if __name__ == "__main__":
