@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widg
 import matplotlib.patches as patches
@@ -139,6 +140,8 @@ class Index_Funcs(object):
 			self.T = _t
 		else:
 			self.T = 0
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def submit_a(self, text_a):
 		_a = 0
@@ -147,6 +150,8 @@ class Index_Funcs(object):
 		except:
 			return "a should be a number"
 		self.a = _a
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def submit_b(self, text_b):
 		_b = 0
@@ -158,6 +163,8 @@ class Index_Funcs(object):
 			self.b = _b
 		else:
 			self.b = self.a
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def show(self, event):
 		top = Tk()
@@ -203,14 +210,16 @@ class Index_Funcs(object):
 		print("Computing function in points")
 		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
 		Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-		Z3 = np.array([[w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j] for j in range(len(X[0]))] for i in range(len(X))])
-		Z3 = Z3[:,:,0]
+		Z3 = np.array([[(w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
 		print("Operations finished")
-
-		self._main_plot_ax.plot_surface(X, Y, Z1, label='Значення y')
-		self._main_plot_ax.plot_surface(X, Y, Z2, label="Значення y_inf")
-		self._main_plot_ax.plot_surface(X, Y, Z3, label="Розв'язок")
-		self._main_plot_ax.legend()
+		self._main_plot_ax.plot_surface(X, Y, Z1, color='b')
+		self._main_plot_ax.plot_surface(X, Y, Z2, color='y')
+		self._main_plot_ax.plot_surface(X, Y, Z3, color='r') 
+		fake2Dline1 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='b', marker = 'o')
+		fake2Dline2 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='y', marker = 'o')
+		fake2Dline3 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='r', marker = 'o')
+		self._main_plot_ax.legend([fake2Dline1, fake2Dline2, fake2Dline3], ['Значення y', 'Значення y_inf', "Розв'язок"], numpoints = 1)
+	
 		self._main_plot_ax.figure.canvas.draw()
 
 
@@ -266,7 +275,7 @@ class Window:
 
 def main():
     fig = plt.figure(figsize=(22, 12), dpi = 72)
-    ax = fig.gca(projection='3d')
+    ax = fig.gca(projection='3d').set(xlabel="X", ylabel="T", zlabel="Y")
     wind = Window(fig, ax)
     plt.show()
 
