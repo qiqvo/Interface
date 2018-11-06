@@ -180,56 +180,52 @@ class Index_Funcs(object):
 		self.__text_oper.set_text(self.get_operator())
 		self.__text_func.set_text(self.get_function())
 	
-	# ! this one will be last - after averytjing is set up
-	# TODO: finish this
+
 	"""This function will collect the inputed data, solve the task and redraw solution"""
 	def evaluateB(self, event):
-		# k1, k2 = 2, 3
-		# k = 1
-		# def y(x, t):
-		# 	return x**k1 * exp(-k2*t)
-		# def G(x, t):
-		# 	return exp(-abs(x)**2 / (4*k**2 *t))/(2*k*sqrt(Pi*abs(t))) if t > 0 else 0
-		# def u(x, t):
-		# 	return  k2* x*k1 *(-exp(-k2* t)) - k**2 * ((k1 - 1)*k1*x**(k1 - 2) *exp(-k2 *t))
-		# 	# return x
-		# w = Worker(y, u, G)         # ! wait for appropriate functions
-		# w.set_region_rectangle(self.a, self.b, self.T)
-		# w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
-		# w.action()
-		# X = np.arange(self.a, self.b, 0.2)
-		# Y = np.arange(0, self.T, 0.2)
-		# Xs, Ys, Z1, Z2, Z3 = [], [], [], [], []
+		k1, k2, k = 2, 3, 1
+		def y(x, t):
+			return x**k1 * exp(-k2*t)
+		def G(x, t):
+			return exp(-abs(x)**2 / (4*k**2 *t))/(2*k*sqrt(Pi*abs(t))) if t > 0 else 0
+		def u(x, t):
+			return  k2* x*k1 *(-exp(-k2* t)) - k**2 * ((k1 - 1)*k1*x**(k1 - 2) *exp(-k2 *t))
 		
-		# for i in range(len(X)):
-		# 	for j in range(len(Y)):
-		# 		Xs.append(X[i])
-		# 		Ys.append(Y[j])
-		# 		Z1.append(y(X[i], Y[j]))
+		w = Worker(y, u, G)         # ! wait for appropriate functions
+		w.set_region_rectangle(self.a, self.b, self.T)
+		w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
+		w.action()
+		X = np.arange(self.a, self.b, 0.2)
+		Y = np.arange(0, self.T, 0.2)
+		Xs, Ys, Z1, Z2, Z3 = [], [], [], [], []
 		
-		# # the main threshold is computing y_inf 
-		# print("Computing function in points")
-		# for i in range(len(X)):
-		# 	for j in range(len(Y)):
-		# 		Z2.append(w.y_inf(X[i], Y[j]))
+		for i in range(len(X)):
+			for j in range(len(Y)):
+				Xs.append(X[i])
+				Ys.append(Y[j])
+				Z1.append(y(X[i], Y[j]))
 		
-		# for i in range(len(X)):
-		# 	for j in range(len(Y)):
-		# 		Z3.append(w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j])
+		# the main threshold is computing y_inf 
+		print("Computing function in points")
+		for i in range(len(X)):
+			for j in range(len(Y)):
+				Z2.append(w.y_inf(X[i], Y[j]))
+		
+		for i in range(len(X)):
+			for j in range(len(Y)):
+				Z3.append(w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j])
 
-		# # Z1 = [[y(X[i], Y[j]) for j in range(len(Y))] for i in range(len(X))]
-		# # Z2 = [[w.y_inf(X[i], Y[j]) for j in range(len(Y))] for i in range(len(X))]
-		# # Z3 = [[w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j] for j in range(len(Y))] for i in range(len(X))]
-		# print("Operations finished")
-		
-		# FIXME: just an example, use other
-		X = np.arange(-5, 5, 0.25)
-		Y = np.arange(-5, 5, 0.25)
-		X, Y = np.meshgrid(X, Y)
-		R = np.sqrt(X**2 + Y**2)
-		Z = np.sin(R)
-		self._main_plot_ax.plot_surface(X, Y, Z)
-		plt.legend()
+		print("Operations finished")
+		Xs = np.array(Xs)
+		Ys = np.array(Ys)
+		Z1 = np.array(Z1)
+		Z2 = np.array(Z2)
+		Z3 = np.array(Z3)
+
+		self._main_plot_ax.scatter(Xs, Ys, Z1, c='r', marker="^", label='Значення y')
+		self._main_plot_ax.scatter(Xs, Ys, Z2, c='b', marker="o", label="Значення y_inf")
+		self._main_plot_ax.scatter(Xs, Ys, Z3, c='g', marker="s", label="Розв'язок")
+		self._main_plot_ax.legend()
 		self._main_plot_ax.figure.canvas.draw()
 
 
@@ -237,24 +233,22 @@ class Window:
 	"""Setting up axes for fields and buttons"""
 	def __init__(self, fig, ax, figsize = (1, 1)):
 		# * Placement
-		self._figure = fig      # matplotlib figure
+		self._figure = fig      
 		self.plt_ax = ax
 		# 1st and 2nd fields
 		self._choose_operator = plt.axes([0.03, 0.82, 0.125, 0.05])   
 		self._choose_function = plt.axes([0.03, 0.67, 0.125, 0.05])   
 		# 3d field
-		self._T_field = plt.axes([0.052, 0.48, 0.05, 0.035])            # *textbox with eval
-		self._a_field = plt.axes([0.052, 0.36, 0.05, 0.035])            # left, third field
-		self._b_field = plt.axes([0.052, 0.29, 0.05, 0.035])            # left, third field
+		self._T_field = plt.axes([0.052, 0.48, 0.05, 0.035])            
+		self._a_field = plt.axes([0.052, 0.36, 0.05, 0.035])            
+		self._b_field = plt.axes([0.052, 0.29, 0.05, 0.035])            
 		# 4th field button
 		self._mark_dots = plt.axes([0.03, 0.20, 0.125, 0.05])
 		# evaluate
-		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      # for evaluate #!button
+		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      		# for evaluation
 		# operator and function textboxes
 		self.__oper_text = plt.text(-8.1, 14.4, "Lu = 0", fontsize=15, style='italic')
-				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
 		self.__func_text = plt.text(-8.1, 11.5, "y(x, t) = 0", fontsize=15, style='italic')
-				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
 		self.callback = Index_Funcs(fig, ax)
 		self.callback.set_text(self.__oper_text, self.__func_text)
 		self._init_fields_()
@@ -268,15 +262,11 @@ class Window:
 		self._function_b.on_clicked(self.callback.function_listbox)
 		# * 3rd field
 		plt.text(-8.2, 10.2, "Введіть значення часу T для", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		plt.text(-8.2, 9.7, "  інтервалу [0, T]:", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
 		self._valueT_txtbox.on_submit(self.callback.submit_T)
 		plt.text(-8.2, 7.9, "Введіть значення границі спостереження", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		plt.text(-8.2, 7.4, "  a та b інтервалу [a, b]:", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valuea_txtbox = widg.TextBox(self._a_field, "a = ", initial="0")
 		self._valuea_txtbox.on_submit(self.callback.submit_a)
 		self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
@@ -289,19 +279,10 @@ class Window:
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
 
-
 def main():
-    fig = plt.figure(figsize=(22, 12), dpi = 80)
+    fig = plt.figure(figsize=(22, 12), dpi = 72)
     ax = fig.gca(projection='3d')
     wind = Window(fig, ax)
-
-    #X = np.arange(-5, 5, 0.25)
-    #Y = np.arange(-5, 5, 0.25)
-    #X, Y = np.meshgrid(X, Y)
-    #R = np.sqrt(X**2 + Y**2)
-    #Z = np.sin(R)
-
-    #ax.plot_surface(X, Y, Z)
     plt.show()
 
 
