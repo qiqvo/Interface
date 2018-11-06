@@ -191,40 +191,24 @@ class Index_Funcs(object):
 		def u(x, t):
 			return  k2* x*k1 *(-exp(-k2* t)) - k**2 * ((k1 - 1)*k1*x**(k1 - 2) *exp(-k2 *t))
 		
-		w = Worker(y, u, G)         # ! wait for appropriate functions
+		w = Worker(y, u, G)   
 		w.set_region_rectangle(self.a, self.b, self.T)
 		w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
 		w.action()
+
 		X = np.arange(self.a, self.b, 0.2)
 		Y = np.arange(0, self.T, 0.2)
-		Xs, Ys, Z1, Z2, Z3 = [], [], [], [], []
-		
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Xs.append(X[i])
-				Ys.append(Y[j])
-				Z1.append(y(X[i], Y[j]))
-		
-		# the main threshold is computing y_inf 
+		X, Y = np.meshgrid(X, Y)
+
 		print("Computing function in points")
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Z2.append(w.y_inf(X[i], Y[j]))
-		
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Z3.append(w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j])
-
+		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		Z3 = np.array([[w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j] for j in range(len(X[0]))] for i in range(len(X))])
 		print("Operations finished")
-		Xs = np.array(Xs)
-		Ys = np.array(Ys)
-		Z1 = np.array(Z1)
-		Z2 = np.array(Z2)
-		Z3 = np.array(Z3)
 
-		self._main_plot_ax.scatter(Xs, Ys, Z1, c='r', marker="^", label='Значення y')
-		self._main_plot_ax.scatter(Xs, Ys, Z2, c='b', marker="o", label="Значення y_inf")
-		self._main_plot_ax.scatter(Xs, Ys, Z3, c='g', marker="s", label="Розв'язок")
+		self._main_plot_ax.plot_surface(X, Y, Z1, label='Значення y')
+		self._main_plot_ax.plot_surface(X, Y, Z2, label="Значення y_inf")
+		self._main_plot_ax.plot_surface(X, Y, Z3, label="Розв'язок")
 		self._main_plot_ax.legend()
 		self._main_plot_ax.figure.canvas.draw()
 
