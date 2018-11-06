@@ -204,6 +204,7 @@ class Index_Funcs(object):
 		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
 		Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
 		Z3 = np.array([[w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j] for j in range(len(X[0]))] for i in range(len(X))])
+		Z3 = Z3[:,:,0]
 		print("Operations finished")
 
 		self._main_plot_ax.plot_surface(X, Y, Z1, label='Значення y')
