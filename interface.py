@@ -64,8 +64,8 @@ class Index_Funcs(object):
 	"""Creates a window to mark the dots s_0, s_g
 	After pressing confirm button dots are written in the class variable"""
 	def dot_marker(self, event):
-		fig = plt.figure()
-		ax = fig.add_subplot(111, aspect="equal")
+		fig = plt.figure(facecolor='#ffff99', edgecolor='#666600')
+		ax = fig.add_subplot(111, aspect="equal", axisbg='#ffff99')
 		ax.set_title('Позначте точки ')
 		ax.add_patch(patches.Rectangle((self.a, 0), self.b - self.a, self.T, fc = 'b'))
 		dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
@@ -249,10 +249,10 @@ class Window:
 
 	def _init_fields_(self):
 		# * 1st field
-		self._operator_b = widg.Button(self._choose_operator, r'Оберати оператор L', color = '#ffcc66')
+		self._operator_b = widg.Button(self._choose_operator, r'Оберати оператор L', color = '#ff9900')
 		self._operator_b.on_clicked(self.callback.operator_listbox)
 		# * 2nd field
-		self._function_b = widg.Button(self._choose_function, "Оберати функцію y(x, t)", color = '#ffcc66')
+		self._function_b = widg.Button(self._choose_function, "Оберати функцію y(x, t)", color = '#ff9900')
 		self._function_b.on_clicked(self.callback.function_listbox)
 		# * 3rd field
 		plt.text(-8.2, 10.2, "Введіть значення часу T для", fontsize=15, style='italic')
@@ -266,18 +266,19 @@ class Window:
 		self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
 		self._valueb_txtbox.on_submit(self.callback.submit_b)
 		# * 4th field
-		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Позначити точки", color = '#ffcc66')
+		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Позначити точки", color = '#ff9900')
 		self._chose_ab_T_dots.on_clicked(self.callback.dot_marker)
 		# * EVALUATE button
-		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#ffcc00')
+		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#339900')
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
 
 def main():
-    fig = plt.figure(figsize=(22, 12), dpi = 72)
-    ax = fig.gca(projection='3d').set(xlabel="X", ylabel="T", zlabel="Y")
-    wind = Window(fig, ax)
-    plt.show()
+	fig = plt.figure(figsize=(22, 12), dpi = 72, facecolor='#ffff99', edgecolor='#666600')
+	ax = fig.gca(projection='3d',axisbg='#ffff99')
+	ax.set(xlabel = "X", ylabel = "T", zlabel = "Y")
+	wind = Window(fig, ax)
+	plt.show()
 
 
 if __name__ == "__main__":
