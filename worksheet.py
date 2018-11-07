@@ -53,11 +53,8 @@ class Worker:
 		u_all = calcul(B11, B12, B21, B22, Y_0, Y_G, self.M_0, self.M_G, self.a, self.b, self.T)
 		self.u_0, self.u_G = u_all[:self.M_0], u_all[self.M_0:]
 		
-		self.y_0 = lambda x, t: sum(self.G(x - self.s_0[i][1], t - 0) * self.u_0[i] for i in range(self.M_0))
-		print('ph4')
-		self.y_G = lambda x, t: sum(self.G(x - self.s_G[i][0], t - self.s_G[i][1]) * self.u_G[i] for i in range(self.M_G))
-		print('ph5')
+		self.y_0 = lambda x, t: sum([self.G(x - self.s_0[i][1], t - 0) * self.u_0[i] for i in range(self.M_0)])
+		self.y_G = lambda x, t: sum([self.G(x - self.s_G[i][0], t - self.s_G[i][1]) * self.u_G[i] for i in range(self.M_G)])
 		self.solution = lambda x, t : self.y_0(x, t) + self.y_G(x, t) + self.y_inf(x, t)
-		print('ph6')
 
 		return self.solution

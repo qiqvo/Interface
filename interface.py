@@ -29,12 +29,11 @@ def u3(x, t):
 	return x - 2*t - k*2
 
 def G1(x, t):
-	return exp(-x**2 / (4*k *t))/(2*sqrt(Pi*t*k)) if t > 0 else 0	
+	return exp(-x**2 / (4*k *t))/(2*sqrt(Pi*t*k)) if t > 0 else 0
 def G2(x, y): # laplace
 	return ln(x**2 + y**2)/(4* Pi)
 def G3(x, t): # wave 
 	return 1/(2*c) if t - abs(x/c) > 0 else 0
-
 
 class Index_Funcs(object):
 	def __init__(self, figure, ax):
@@ -45,6 +44,7 @@ class Index_Funcs(object):
 		self.marked_dots_ab = []
 		self.function = None
 		self.operator = None
+
 		self.operatorList = [("Lu = du/dt - k d^2 u/dx^2", G1)]
 							# "Lu = d^2 u/dx^2 + d^2 u/dy^2", 
 							# "Lu = d^2 u/dt^2 - c^2 d^2 u/dx^2"]
@@ -90,8 +90,8 @@ class Index_Funcs(object):
 	"""Creates a window to mark the dots s_0, s_g
 	After pressing confirm button dots are written in the class variable"""
 	def dot_marker(self, event):
-		fig = plt.figure()
-		ax = fig.add_subplot(111, aspect="equal")
+		fig = plt.figure(facecolor='#ffff99', edgecolor='#666600')
+		ax = fig.add_subplot(111, aspect="equal", facecolor='#ffff99')
 		ax.set_title('Позначте точки ')
 		ax.add_patch(patches.Rectangle((self.a, 0), self.b - self.a, self.T, fc = 'b'))
 		dot, = ax.plot([self.a + self.b/2], [self.T/2], 'b.')
@@ -218,6 +218,8 @@ class Index_Funcs(object):
 
 	"""This function will collect the inputed data, solve the task and redraw solution"""
 	def evaluateB(self, event):
+		self._main_plot_ax.clear()
+
 		y, u, G = self.__y, self.__u, self.__G
 		
 		print("Evaluation began")
@@ -226,15 +228,15 @@ class Index_Funcs(object):
 		w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
 		w.action()
 
-		X = np.arange(self.a, self.b, 0.1)
-		Y = np.arange(0, self.T, 0.1)
+		X = np.arange(self.a, self.b, 0.2)
+		Y = np.arange(0, self.T, 0.2)
 		X, Y = np.meshgrid(X, Y)
 
 		print("Computing function in points")
 		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-		Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-		Z3 = np.array([[(w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
-		print("Operations finished")
+		# Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		Z3 = np.array([[w.solution(X[i][j], Y[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
+		print("Operations finished\n\n\n")
 
 		self._main_plot_ax.plot_surface(X, Y, Z1, color='b')
 		# self._main_plot_ax.plot_surface(X, Y, Z2, color='y')
@@ -274,10 +276,10 @@ class Window:
 
 	def _init_fields_(self):
 		# * 1st field
-		self._operator_b = widg.Button(self._choose_operator, r'Оберати оператор L', color = '#ffcc66')
+		self._operator_b = widg.Button(self._choose_operator, r'Обирати оператор L', color = '#ff9900')
 		self._operator_b.on_clicked(self.callback.operator_listbox)
 		# * 2nd field
-		self._function_b = widg.Button(self._choose_function, "Оберати функцію y(x, t)", color = '#ffcc66')
+		self._function_b = widg.Button(self._choose_function, "Оберати функцію y(x, t)", color = '#ff9900')
 		self._function_b.on_clicked(self.callback.function_listbox)
 		# * 3rd field
 		plt.text(-8.2, 10.2, "Введіть значення часу T для", fontsize=15, style='italic')
@@ -291,19 +293,19 @@ class Window:
 		self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
 		self._valueb_txtbox.on_submit(self.callback.submit_b)
 		# * 4th field
-		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Позначити точки", color = '#ffcc66')
+		self._chose_ab_T_dots = widg.Button(self._mark_dots, "Позначити точки", color = '#ff9900')
 		self._chose_ab_T_dots.on_clicked(self.callback.dot_marker)
 		# * EVALUATE button
-		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#ffcc00')
+		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#339900')
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
 
 def main():
-    fig = plt.figure(figsize=(22, 12), dpi = 72)
-    ax = fig.gca(projection='3d')
-    ax.set(xlabel="X", ylabel="T", zlabel="Y")
-    wind = Window(fig, ax)
-    plt.show()
+	fig = plt.figure(figsize=(22, 12), dpi = 72, facecolor='#ffff99', edgecolor='#666600')
+	ax = fig.gca(projection='3d',facecolor='#ffff99')
+	ax.set(xlabel = "X", ylabel = "T", zlabel = "Y")
+	wind = Window(fig, ax)
+	plt.show()
 
 
 if __name__ == "__main__":
