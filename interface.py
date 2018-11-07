@@ -1,14 +1,39 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.widgets as widg
 import matplotlib.patches as patches
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from math import exp, sqrt
+from math import *
 from worksheet import Worker
 import numpy as np
 from tkinter import *
 Pi = 3.14159265359
+
+k1, k2, k = 2, 3, 5
+c = 3
+def y1(x, t):
+	return x**k1 * exp(-k2*t)
+def u1(x, t):
+	return  k2* x*k1 *(-exp(-k2* t)) - k * ((k1 - 1)*k1*x**(k1 - 2) *exp(-k2 *t))
+
+def y2(x, t):
+	return sin(x*t)
+def u2(x, t):
+	return x*cos(t*x) + k*t**2 *sin(t* x)
+
+def y3(x, t):
+	return x**2 + x*t - t**2
+def u3(x, t):
+	return x - 2*t - k*2
+
+def G1(x, t):
+	return exp(-x**2 / (4*k *t))/(2*sqrt(Pi*t*k)) if t > 0 else 0	
+def G2(x, y): # laplace
+	return ln(x**2 + y**2)/(4* Pi)
+def G3(x, t): # wave 
+	return 1/(2*c) if t - abs(x/c) > 0 else 0
 
 
 class Index_Funcs(object):
@@ -16,19 +41,16 @@ class Index_Funcs(object):
 		self._main_figure = figure
 		self._main_plot_ax=ax
 		self.T = self.a = self.b = 0
-		# due to make checking easier
-		self.T = 3
-		self.a = -1
-		self.b = 1
-
 		self.marked_dots_T = []
 		self.marked_dots_ab = []
 		self.function = None
 		self.operator = None
-		self.operators = (lambda x: 21*x + 3, lambda x: 3*x*x + 3, lambda x: 21)
-		self.operatorList = ["Lu = 21u + 3", "Lu = 3u^2 + u", "Lu = 12"]
-		self.functions = (lambda x: 23*x + 4, lambda x: x*x + 5, lambda x: 21*x, lambda x: 49*x**4 + 45*x)
-		self.functionList = ["y(x, t) = 23x + 4 * x^2 + 5", "y(x, t) = 12x", "y(x, t) = 49 * x^4 + 45x"]
+		self.operatorList = [("Lu = du/dt - k d^2 u/dx^2", G1)]
+							# "Lu = d^2 u/dx^2 + d^2 u/dy^2", 
+							# "Lu = d^2 u/dt^2 - c^2 d^2 u/dx^2"]
+		self.functionList = [("y(x, t) = x**k1 * exp(-k2*t)", y1, u1), 
+							("y(x, t) = sin(x*t)", y2, u2),
+							("y(x, t) = x**2 + x*t - t**2", y3, u3)]
 		   
 	"""Helper class for marking dots on the separate UI window"""
 	class DotBuilder:
@@ -36,7 +58,7 @@ class Index_Funcs(object):
 			self.dots = dots
 			self.left, self.right, self.time = a, b, T
 			self._dots_ab = []
-			self._dots_T = []
+			self._dots_T  = []
 			self._markedx = []
 			self._markedy = []
 			__far_left = a - a*0.2 - b*0.2 - T*0.2
@@ -90,7 +112,7 @@ class Index_Funcs(object):
 		Lb_oper = Listbox(top, width = 40)
 		i = 1
 		for op in self.operatorList:
-			Lb_oper.insert(i, op)
+			Lb_oper.insert(i, op[0])
 			i += 1
 		Lb_oper.pack()
     
@@ -109,7 +131,7 @@ class Index_Funcs(object):
 		Lb_func = Listbox(top, width = 40)
 		i = 1
 		for op in self.functionList:
-			Lb_func.insert(i, op)
+			Lb_func.insert(i, op[0])
 			i += 1
 		Lb_func.pack()
     
@@ -126,13 +148,13 @@ class Index_Funcs(object):
 		if self.function is not None:
 			return self.functionList[self.function]
 		else:
-			return "y(x, t) = 0"
+			return "y(x, t) = 0", lambda x, t : 0, lambda x, t : 0
 	
 	def get_operator(self):
 		if self.operator is not None:
 			return self.operatorList[self.operator]
 		else:
-			return "Lu = 0"
+			return "Lu = 0", lambda x, t : 0
 	
 	def submit_T(self, text_T):
 		_t = 0
@@ -144,6 +166,8 @@ class Index_Funcs(object):
 			self.T = _t
 		else:
 			self.T = 0
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def submit_a(self, text_a):
 		_a = 0
@@ -152,6 +176,8 @@ class Index_Funcs(object):
 		except:
 			return "a should be a number"
 		self.a = _a
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def submit_b(self, text_b):
 		_b = 0
@@ -163,6 +189,8 @@ class Index_Funcs(object):
 			self.b = _b
 		else:
 			self.b = self.a
+		self.marked_dots_T = []
+		self.marked_dots_ab = []
 	
 	def show(self, event):
 		top = Tk()
@@ -182,56 +210,41 @@ class Index_Funcs(object):
 	
 	"""Changes text of operator and function in UI"""
 	def update_text(self):
-		self.__text_oper.set_text(self.get_operator())
-		self.__text_func.set_text(self.get_function())
+		text_operator, self.__G = self.get_operator()
+		self.__text_oper.set_text(text_operator)
+		text_function, self.__y, self.__u = self.get_function()
+		self.__text_func.set_text(text_function)
 	
-	# ! this one will be last - after averytjing is set up
-	# TODO: finish this
+
 	"""This function will collect the inputed data, solve the task and redraw solution"""
 	def evaluateB(self, event):
-		k1, k2 = 2, 3
-		k = 1
-		def y(x, t):
-			return x**k1 * exp(-k2*t)
-		def G(x, t):
-			return exp(-abs(x)**2 / (4*k**2 *t))/(2*k*sqrt(Pi*abs(t))) if t > 0 else 0
-		def u(x, t):
-			return  k2* x*k1 *(-exp(-k2* t)) - k**2 * ((k1 - 1)*k1*x**(k1 - 2) *exp(-k2 *t))
-			# return x
-		w = Worker(y, u, G)         # ! wait for appropriate functions
+		y, u, G = self.__y, self.__u, self.__G
+		
+		print("Evaluation began")
+		w = Worker(y, u, G)   
 		w.set_region_rectangle(self.a, self.b, self.T)
 		w.set_modeling_function_points(self.marked_dots_T, self.marked_dots_ab)
 		w.action()
-		X = np.arange(self.a, self.b, 0.2)
-		Y = np.arange(0, self.T, 0.2)
-		Xs, Ys, Z1, Z2, Z3 = [], [], [], [], []
-		
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Xs.append(X[i])
-				Ys.append(Y[j])
-				Z1.append(y(X[i], Y[j]))
-		
-		# the main threshold is computing y_inf 
+
+		X = np.arange(self.a, self.b, 0.1)
+		Y = np.arange(0, self.T, 0.1)
+		X, Y = np.meshgrid(X, Y)
+
 		print("Computing function in points")
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Z2.append(w.y_inf(X[i], Y[j]))
-		
-		for i in range(len(X)):
-			for j in range(len(Y)):
-				Z3.append(w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j])
-
-		# Z1 = [[y(X[i], Y[j]) for j in range(len(Y))] for i in range(len(X))]
-		# Z2 = [[w.y_inf(X[i], Y[j]) for j in range(len(Y))] for i in range(len(X))]
-		# Z3 = [[w.y_0(X[i], Y[j]) + w.y_G(X[i], Y[j]) + Z2[i*len(X) + j] for j in range(len(Y))] for i in range(len(X))]
+		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		Z3 = np.array([[(w.y_0(X[i][j], Y[i][j]) + w.y_G(X[i][j], Y[i][j]) + Z2[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
 		print("Operations finished")
-		
 
-		self._main_plot_ax.plot_surface(Xs, Ys, Z1, "yo", label='y')
-		self._main_plot_ax.plot_surface(Xs, Ys, Z2, "ro", label="y_inf")
-		self._main_plot_ax.plot_surface(Xs, Ys, Z3, "bo", label='solution')
-		plt.legend()
+		self._main_plot_ax.plot_surface(X, Y, Z1, color='b')
+		# self._main_plot_ax.plot_surface(X, Y, Z2, color='y')
+		self._main_plot_ax.plot_surface(X, Y, Z3, color='r') 
+		fake2Dline1 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='b', marker = 'o')
+		# fake2Dline2 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='y', marker = 'o')
+		fake2Dline3 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='r', marker = 'o')
+		# self._main_plot_ax.legend([fake2Dline1, fake2Dline2, fake2Dline3], ['Значення y', 'Значення y_inf', "Розв'язок"], numpoints = 1)
+		self._main_plot_ax.legend([fake2Dline1, fake2Dline3], ['Значення y', "Розв'язок"], numpoints = 1)
+
 		self._main_plot_ax.figure.canvas.draw()
 
 
@@ -239,24 +252,22 @@ class Window:
 	"""Setting up axes for fields and buttons"""
 	def __init__(self, fig, ax, figsize = (1, 1)):
 		# * Placement
-		self._figure = fig      # matplotlib figure
+		self._figure = fig      
 		self.plt_ax = ax
 		# 1st and 2nd fields
 		self._choose_operator = plt.axes([0.03, 0.82, 0.125, 0.05])   
 		self._choose_function = plt.axes([0.03, 0.67, 0.125, 0.05])   
 		# 3d field
-		self._T_field = plt.axes([0.052, 0.48, 0.05, 0.035])            # *textbox with eval
-		self._a_field = plt.axes([0.052, 0.36, 0.05, 0.035])            # left, third field
-		self._b_field = plt.axes([0.052, 0.29, 0.05, 0.035])            # left, third field
+		self._T_field = plt.axes([0.052, 0.48, 0.05, 0.035])            
+		self._a_field = plt.axes([0.052, 0.36, 0.05, 0.035])            
+		self._b_field = plt.axes([0.052, 0.29, 0.05, 0.035])            
 		# 4th field button
 		self._mark_dots = plt.axes([0.03, 0.20, 0.125, 0.05])
 		# evaluate
-		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      # for evaluate #!button
+		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      		# for evaluation
 		# operator and function textboxes
 		self.__oper_text = plt.text(-8.1, 14.4, "Lu = 0", fontsize=15, style='italic')
-				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
 		self.__func_text = plt.text(-8.1, 11.5, "y(x, t) = 0", fontsize=15, style='italic')
-				#bbox={'facecolor': '#99CCFF', 'alpha': 0.5, 'pad': 10})
 		self.callback = Index_Funcs(fig, ax)
 		self.callback.set_text(self.__oper_text, self.__func_text)
 		self._init_fields_()
@@ -270,15 +281,11 @@ class Window:
 		self._function_b.on_clicked(self.callback.function_listbox)
 		# * 3rd field
 		plt.text(-8.2, 10.2, "Введіть значення часу T для", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		plt.text(-8.2, 9.7, "  інтервалу [0, T]:", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valueT_txtbox = widg.TextBox(self._T_field, "T = ", initial="0")
 		self._valueT_txtbox.on_submit(self.callback.submit_T)
 		plt.text(-8.2, 7.9, "Введіть значення границі спостереження", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		plt.text(-8.2, 7.4, "  a та b інтервалу [a, b]:", fontsize=15, style='italic')
-				#bbox={'facecolor': 'green', 'alpha': 0.5, 'pad': 10})
 		self._valuea_txtbox = widg.TextBox(self._a_field, "a = ", initial="0")
 		self._valuea_txtbox.on_submit(self.callback.submit_a)
 		self._valueb_txtbox = widg.TextBox(self._b_field, "b = ", initial="0")
@@ -291,19 +298,11 @@ class Window:
 		self._eval_button.on_clicked(self.callback.evaluateB)
 
 
-
 def main():
-    fig = plt.figure(figsize=(22, 12), dpi = 80)
+    fig = plt.figure(figsize=(22, 12), dpi = 72)
     ax = fig.gca(projection='3d')
+    ax.set(xlabel="X", ylabel="T", zlabel="Y")
     wind = Window(fig, ax)
-
-    #X = np.arange(-5, 5, 0.25)
-    #Y = np.arange(-5, 5, 0.25)
-    #X, Y = np.meshgrid(X, Y)
-    #R = np.sqrt(X**2 + Y**2)
-    #Z = np.sin(R)
-
-    #ax.plot_surface(X, Y, Z)
     plt.show()
 
 

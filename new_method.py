@@ -16,7 +16,7 @@ def prod(fA, fB, rule_mult, rule_sum, n, m, K):
 	for i in range(n):
 		for j in range(m):
 			for k in range(K):
-				print('ph2.1.2')
+				# print('ph2.1.2')
 				# print(fB(i, j))
 				if R[i][j] == 0:
 					R[i][j] = rule_mult(fA(i, k), fB(k, j))
@@ -31,8 +31,7 @@ def matrix_integrate_x(fA, a, b, n, m):
 	IntA = [[0 for _ in range(m)] for _ in range(n)]
 	for i in range(n):
 		for j in range(m):
-			print('ph_ int1')
-
+			# print('ph_ int1')
 			IntA[i][j] = integral(fA(i, j), a, b)
 
 	return IntA
@@ -42,7 +41,7 @@ def matrix_integrate_xt(fA, a, b, T, n, m):
 	IntA = [[0 for _ in range(m)] for _ in range(n)]
 	for i in range(n):
 		for j in range(m):
-			print('ph_ int2')
+			# print('ph_ int2')
 			IntA[i][j] = integral(lambda t: (fA(i, j)(a, t)), 0, T) + \
 						integral(lambda t: (fA(i, j)(b, t)), 0, T)	
 
@@ -87,7 +86,7 @@ def calcul(_B1, _B2, _B3, _B4, _Y1, _Y2, M_0, M_G, a, b, T):
 	rule_sum_xt = lambda f, g: lambda x, t: f(x, t) + g(x, t) 
 
 	# K = 1 -- number of conditions on Y
-	print('ph2.1')
+	# print('ph2.1')
 
 	P11 = np.array(matrix_integrate_x(prod(ftrB1, fB1, rule_mult_x, rule_sum_x, M_0, M_0, 1), a, b, M_0, M_0))
 	P21 = np.array(matrix_integrate_x(prod(ftrB1, fB2, rule_mult_x, rule_sum_x, M_0, M_G, 1), a, b, M_0, M_G))
@@ -98,38 +97,38 @@ def calcul(_B1, _B2, _B3, _B4, _Y1, _Y2, M_0, M_G, a, b, T):
 	P22 = np.array(matrix_integrate_xt(prod(ftrB3, fB4, rule_mult_xt, rule_sum_xt, M_0, M_G, 1), a, b, T, M_0, M_G))
 	P32 = np.array(matrix_integrate_xt(prod(ftrB4, fB3, rule_mult_xt, rule_sum_xt, M_G, M_0, 1), a, b, T, M_G, M_0))
 	P42 = np.array(matrix_integrate_xt(prod(ftrB4, fB4, rule_mult_xt, rule_sum_xt, M_G, M_G, 1), a, b, T, M_G, M_G))
-	print('ph2.2')
+	# print('ph2.2')
 
 	P1 = P11 + P12
 	P2 = P21 + P22
 	P3 = P31 + P32
 	P4 = P41 + P42
-	print('ph2.3')
+	# print('ph2.3')
 
 	P = combine_matrix(P1, P2, P3, P4)
-	print('ph2.4')
+	# print('ph2.4')
 
 	### int (B* Y)
 	Y11 = np.array(matrix_integrate_x(prod(ftrB1, fY1, rule_mult_x, rule_sum_x, M_0, 1, 1), a, b, M_0, 1))
 	Y21 = np.array(matrix_integrate_x(prod(ftrB2, fY1, rule_mult_x, rule_sum_x, M_G, 1, 1), a, b, M_G, 1))
-	print('ph2.4.1')
+	# print('ph2.4.1')
 
 	Y12 = np.array(matrix_integrate_xt(prod(ftrB3, fY2, rule_mult_xt, rule_sum_xt, M_0, 1, 1), a, b, T, M_0, 1))
 	Y22 = np.array(matrix_integrate_xt(prod(ftrB4, fY2, rule_mult_xt, rule_sum_xt, M_G, 1, 1), a, b, T, M_G, 1))
-	print('ph2.5')
+	# print('ph2.5')
 
 	Y1 = Y11 + Y12
 	Y2 = Y21 + Y22
-	print('ph2.6')
+	# print('ph2.6')
 
 	Y = combine_matrix(Y1, [[]], Y2, [[]]) 
-	print('ph2.7')
+	# print('ph2.7')
 
-	print(P)
-	print(Y)
+	# print(P)
+	# print(Y)
 
 	u = np.linalg.solve(P, Y)
-	print(u)
+	# print(u)
 	return u
 
 # TODO SMOKI: calculate error
