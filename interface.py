@@ -219,6 +219,8 @@ class Index_Funcs(object):
 	"""This function will collect the inputed data, solve the task and redraw solution"""
 	def evaluateB(self, event):
 		self._main_plot_ax.clear()
+		self._main_plot_ax.set(xlabel = "X", ylabel = "T", zlabel = "Y")
+
 
 		y, u, G = self.__y, self.__u, self.__G
 		
@@ -233,21 +235,47 @@ class Index_Funcs(object):
 		X, Y = np.meshgrid(X, Y)
 
 		print("Computing function in points")
-		Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-		# Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-		Z3 = np.array([[w.solution(X[i][j], Y[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
+		self.Z1 = np.array([[y(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		# self.Z2 = np.array([[w.y_inf(X[i][j], Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
+		self.Z3 = np.array([[w.solution(X[i][j], Y[i][j])[0] for j in range(len(X[0]))] for i in range(len(X))])
 		print("Operations finished\n\n\n")
 
-		self._main_plot_ax.plot_surface(X, Y, Z1, color='b')
+		self._main_plot_ax.plot_surface(X, Y, self.Z1, color='b')
 		# self._main_plot_ax.plot_surface(X, Y, Z2, color='y')
-		self._main_plot_ax.plot_surface(X, Y, Z3, color='r') 
+		self._main_plot_ax.plot_surface(X, Y, self.Z3, color='y') 
 		fake2Dline1 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='b', marker = 'o')
 		# fake2Dline2 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='y', marker = 'o')
-		fake2Dline3 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='r', marker = 'o')
+		fake2Dline3 = matplotlib.lines.Line2D([0],[0], linestyle="none", c='y', marker = 'o')
 		# self._main_plot_ax.legend([fake2Dline1, fake2Dline2, fake2Dline3], ['Значення y', 'Значення y_inf', "Розв'язок"], numpoints = 1)
 		self._main_plot_ax.legend([fake2Dline1, fake2Dline3], ['Значення y', "Розв'язок"], numpoints = 1)
 
 		self._main_plot_ax.figure.canvas.draw()
+
+	def borderB(self, event):
+		fig = plt.figure(facecolor='#ffff99', edgecolor='#666600')
+		# fig.set_title('Функція на границях')
+		# 0, T
+		T = np.arange(0, self.T, 0.2)
+		X = np.arange(self.a, self.b, 0.2)
+		# ax1.plot([(1, 2), (3, 4)], [(4, 3), (2, 3)])
+		
+		ax2 = fig.add_subplot(131)
+		ax2.set_title('при T=0')
+		ax2.plot(X, self.Z1[0])
+		ax2.plot(X, self.Z3[0])
+
+		ax1 = fig.add_subplot(132)
+		ax1.set_title('при x=a')
+		ax1.plot(T, [self.Z1[i][0] for i in range(len(self.Z1))])
+		ax1.plot(T, [self.Z3[i][0] for i in range(len(self.Z3))])
+		
+		ax3 = fig.add_subplot(133)
+		ax3.set_title('при x=b')
+		ax3.plot(T, [self.Z1[i][-1] for i in range(len(self.Z1))])
+		ax3.plot(T, [self.Z3[i][-1] for i in range(len(self.Z3))])
+
+		plt.show()
+
 
 
 class Window:
@@ -266,7 +294,9 @@ class Window:
 		# 4th field button
 		self._mark_dots = plt.axes([0.03, 0.20, 0.125, 0.05])
 		# evaluate
-		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])      		# for evaluation
+		self._eval_field = plt.axes([0.85, 0.05, 0.1, 0.05])
+		# borders show
+		self._border_field = plt.axes([0.85, 0.15, 0.1, 0.05])
 		# operator and function textboxes
 		self.__oper_text = plt.text(-8.1, 14.4, "Lu = 0", fontsize=15, style='italic')
 		self.__func_text = plt.text(-8.1, 11.5, "y(x, t) = 0", fontsize=15, style='italic')
@@ -297,7 +327,10 @@ class Window:
 		self._chose_ab_T_dots.on_clicked(self.callback.dot_marker)
 		# * EVALUATE button
 		self._eval_button = widg.Button(self._eval_field, "Обрахувати", color='#339900')
-		self._eval_button.on_clicked(self.callback.evaluateB)
+		self._eval_button.on_clicked(self.callback.evaluateB)		
+		# * Border Show button
+		self._border_button = widg.Button(self._border_field, "Показати на границях", color='#339900')
+		self._border_button.on_clicked(self.callback.borderB)
 
 
 def main():
